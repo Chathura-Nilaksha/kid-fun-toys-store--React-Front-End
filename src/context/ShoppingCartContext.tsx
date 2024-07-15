@@ -26,8 +26,9 @@ export function useShoppingCart() {
 
 export function ShoppingCartProvider({children}:ShoppingCartProviderProps){
     // const [cartItems, setCartItems] = useState<CartItem[]>([]);
-    const [cartItems, setCartItems] = useLocalStorage<CartItem[]>("shopping-cart", []);    
-    const cartQuantity = cartItems.reduce((quantity, item) => (item.quantity+ quantity), 0)
+    const [cartItems, setCartItems] = useLocalStorage<CartItem[]>("shopping-cart", []); 
+
+    const cartQuantity = cartItems.reduce((quantity, item) => (item.quantity+ quantity), 0);
     
     function getItemQuantity(id: number){
         return  cartItems.find(item => item.id === id)?.quantity || 0

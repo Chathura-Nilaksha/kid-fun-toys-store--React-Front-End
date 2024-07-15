@@ -6,7 +6,7 @@ import storeItems from "../data/landingPageItems.json";
 import { Button } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface FormInputCart {  
     firstName: string,   // need to change these variables--ship    
@@ -45,6 +45,7 @@ interface orderItemDetails {
 
 export default function Cart() {
     const { cartQuantity, cartItems, removeFromCart } = useShoppingCart();
+
     // function calculatingSubTotal() {
     //     let rs: any = document.getElementById("unitPriceOfItem")?.nodeValue;
     //     let qty: any = (document.getElementById("qtyOfItem") as HTMLSpanElement | null)?.nodeValue;
@@ -80,6 +81,8 @@ export default function Cart() {
     //     }       
     // }    
     // const[saveShippingAddress, setSaveShippingAddress] = useState(false);
+
+
     
     const handleSaveShipping = (e : any) => { //this is to --> save Ship addr.details
         console.log(e.target.checked);
@@ -88,11 +91,14 @@ export default function Cart() {
         }
         // setSaveShippingAddress(e.target.checked);
     }
-    const [assignShippingAddressData, setAssignShippingAddressData ] = 
-        useState({ 
-            // Document.getElementById("firstNameBill")?.value = "",
-            firstName : ""
-        })
+
+
+
+    // const [assignShippingAddressData, setAssignShippingAddressData ] = 
+    //     useState({ 
+    //         // Document.getElementById("firstNameBill")?.value = "",
+    //         firstName : ""
+    //     })
     // const shippingAddressDataArray : string [] = [
     //     shipingFirshName,
     //     ar
@@ -105,10 +111,9 @@ export default function Cart() {
         // shipFirstName ;
     // }
     // const [valFirstName, setValFirstName] = useState("")
+    // const [valBillFirstName, setValBillFirstName] = useState("")
 
-    const [isSameAsShippingAddress, setIsSameAsShippingAddress] = useState(false);
-    
-    const [valBillFirstName, setValBillFirstName] = useState("")
+    const [isSameAsShippingAddress, setIsSameAsShippingAddress] = useState(false);   
     
     const valFirstName = watch("firstName");
     const valLastName = watch("lastName");    
@@ -144,10 +149,9 @@ export default function Cart() {
             //console.log(register.firstName)
             // document.getElementById("firstNameBill")?.setAttribute("value", shipFirstName);
             //register.firstNameBill = firstNameShiptesting;
+        }else{
+            setIsSameAsShippingAddress(false)
         }
-        // }else{
-        //     setIsSameAsShippingAddress(false)
-        // }
     }
 
     const handleSaveBilling = (e : any) => { //this is to --> save Billing addr.details
@@ -156,7 +160,17 @@ export default function Cart() {
             console.log("save Billing addr data");// here put a function when tick, to add billing address data to save in BE
         } 
     }
-       
+
+    const [ countriesArray, setCountriesArray ] = useState([]);
+
+    useEffect (() => {fetch("https://restcountries.com/v3.1/all")
+        .then((res) => res.json())
+        .then(
+            (res) => {setCountriesArray(res); 
+                        //  console.log(...res)
+                    }
+        )}, []
+    );                                               
     
 
 
@@ -293,8 +307,8 @@ export default function Cart() {
                                 <div>   {/*  <form className="needs-validation"> */}
                                     <div className="row g-3">
                                         <div className="col-sm-6 ">
-                                            <label htmlFor="firstName" className="form-label">First name <span className="text-muted"><small>(Required)</small></span> </label>
-                                            <input type="text" className="form-control" id="firstName"                                               
+                                            <label htmlFor="firstName" className="form-label">First name </label>
+                                            <input type="text" className="form-control" id="firstName"   /* required */
                                                 //value={ }  //onChange={ }                                                                                 
                                                 
                                                 {...register("firstName", { required: {value : true, message : "First name is requred"} })} 
@@ -303,22 +317,24 @@ export default function Cart() {
                                             <p>{errors.firstName?.message}</p>
 
                                             {/* Below validating lines were there in all input areas at the initial stage.
-                                            <div className="invalid-feedback">
-                                                Valid first name is required.
-                                            </div> */}
+                                            <div className="invalid-feedback"> Valid first name is required.</div> */}                                             
                                         </div>
 
                                         <div className="col-sm-6">
-                                            <label htmlFor="lastName" className="form-label">Last name <span className="text-muted"><small>(Required)</small></span> </label>
-                                            <input type="text" className="form-control" id="lastName" placeholder=""  required 
+                                            <label htmlFor="lastName" className="form-label">Last name </label>
+                                            <input type="text" className="form-control" id="lastName" placeholder=""
                                                 {...register("lastName", { required: {value : true, message : "Last name is requred"} })} />
                                             <p>{errors.lastName?.message}</p>
                                         </div>
 
                                         <div className="col-sm-6">
                                             <label htmlFor="phone-number" className="form-label">Phone Number</label>
-                                            <input type="text" className="form-control" id="phoneNumber" placeholder="Example: 0771234567"  required 
-                                                {...register("phoneNumber", { required: {value : true, message : "Phone number is requred"} })}/>
+                                            <input type="text" className="form-control" id="phoneNumber" placeholder="Ex: 0771234567" 
+                                                {...register("phoneNumber", 
+                                                                { required: {value : true, message : "Phone number is requred" } 
+                                                                    //  valueAsNumber: true  <---this is only to type="number" 
+                                                                }
+                                                                )}/>
                                             <p>{errors.phoneNumber?.message}</p>
                                         </div>
 
@@ -340,7 +356,7 @@ export default function Cart() {
 
                                         <div className="col-12">
                                             <label htmlFor="address" className="form-label">Address</label>
-                                            <input type="text" className="form-control" id="addressLine1" placeholder="1234 Main St" required 
+                                            <input type="text" className="form-control" id="addressLine1" placeholder="1234 Main St"
                                                 {...register("addressLine1", { required: {value : true, message : "Address is requred"} })}/>
                                             <p>{errors.addressLine1?.message}</p>
                                         </div>
@@ -353,25 +369,47 @@ export default function Cart() {
 
                                         <div className="col-md-5">
                                             <label htmlFor="country" className="form-label">Country</label>
-                                            <select className="form-select" id="country" required
+                                            <select className="form-select" id="country"
                                                 {...register("country", { required: {value : true, message : "Country is requred"} })} >
                                                 <option value="">Choose...</option>
-                                                <option>United States</option>
+                                                {countriesArray && countriesArray.map((country) => 
+                                                    <option key={country.name.common}>{country.name.common}</option>)}
                                             </select>
                                             <p>{errors.country?.message}</p>
                                         </div>
 
                                         <div className="col-md-4">
                                             <label htmlFor="state" className="form-label">Distric</label>
-                                            <select className="form-select" id="state" required
+                                            <select className="form-select" id="state" 
                                                 {...register("district", { required: {value : true, message : "District is requred"} })} >
                                                 <option value="">Choose...</option>
-                                                <option>California</option>
+                                                <option>Colombo</option>
+                                                <option>Gampaha</option>
+                                                <option>Kalutara</option>
+                                                <option>Kandy</option>
+                                                <option>Matale</option>
+                                                <option>Nuwara Eliya</option>
+                                                <option>Galle</option>
+                                                <option>Matara</option>
+                                                <option>Hambantota</option>
+                                                <option>Jaffna</option>
+                                                <option>Kilinochchi</option>
+                                                <option>Vavuniya</option>
+                                                <option>Mullaitivu</option>
+                                                <option>Batticaloa</option>
+                                                <option>Ampara</option>
+                                                <option>Trincomalee</option>
+                                                <option>Kurunegala</option>
+                                                <option>Puttalam</option>
+                                                <option>Anuradhapura</option>
+                                                <option>Polonnaruwa</option>
+                                                <option>Badulla</option>
+                                                <option>Moneragala</option>
+                                                <option>Ratnapura</option>
+                                                <option>Kegalle</option>
                                             </select>
                                             <p>{errors.district?.message}</p>
                                         </div>
-
-
                                     </div>
 
                                     <hr className="my-4" />
@@ -406,85 +444,98 @@ export default function Cart() {
                                     </div>
                                                     {/* BOX  TICK--END-- for equal address data */}
 
+
+
+
                                     <div className="row g-3">
                                         <div className="col-sm-6">
                                             <label htmlFor="firstNameBill" className="form-label">First name</label>
-                                            <input type="text" className="form-control" id="firstNameBill" placeholder=""  required 
+                                            <input type="text" className="form-control" id="firstNameBill" placeholder=""  
                                                 disabled={isSameAsShippingAddress}
                                                 {...register("firstNameBill", { required: {value : true, message : "First name is requred"} })} />
                                             <p>{errors.firstNameBill?.message}</p>
-
-                                            {/* <div className="invalid-feedback">
-                                                Valid first name is required.
-                                            </div> */}
                                         </div>
 
                                         <div className="col-sm-6">
                                             <label htmlFor="lastName" className="form-label">Last name</label>
-                                            <input type="text" className="form-control" id="lastNameBill" placeholder="" required
+                                            <input type="text" className="form-control" id="lastNameBill" placeholder=""
                                                 disabled={isSameAsShippingAddress}
                                                 {...register("lastNameBill", { required: {value : true, message : "Last name is requred"} })} />
                                             <p>{errors.lastNameBill?.message}</p>
-                                            {/* <div className="invalid-feedback">
-                                                Valid last name is required.
-                                            </div> */}
                                         </div>
 
                                         <div className="col-12">
                                             <label htmlFor="email" className="form-label">Email <span className="text-body-secondary">(Optional)</span></label>
                                             <input type="email" className="form-control" id="emailBill" placeholder="you@example.com" 
                                                 // value={billEmail}
+                                                disabled={isSameAsShippingAddress}
                                                 {...register("emailBill", { required: {value : true, message : "Email is requred"} })} />
                                             <p>{errors.emailBill?.message}</p>
-                                            {/* <div className="invalid-feedback">
-                                                Please enter a valid email address for shipping updates.
-                                            </div> */}
                                         </div>
 
                                         <div className="col-12">
                                             <label htmlFor="address" className="form-label">Address</label>
-                                            <input type="text" className="form-control" id="addressLine1Bill" placeholder="1234 Main St" required 
+                                            <input type="text" className="form-control" id="addressLine1Bill" placeholder="1234 Main St"
+                                                disabled={isSameAsShippingAddress} 
                                                 {...register("addressLine1Bill", { required: {value : true, message : "Address is requred"} })} />
                                             <p>{errors.addressLine1Bill?.message}</p>
-                                            {/* <div className="invalid-feedback">
-                                                Please enter your shipping address.
-                                            </div> */}
                                         </div>
 
                                         <div className="col-12">
                                             <label htmlFor="address2" className="form-label">Address 2 <span className="text-body-secondary">(Optional)</span></label>
                                             <input type="text" className="form-control" id="addressLine2Bill" placeholder="Apartment or suite" 
+                                                disabled={isSameAsShippingAddress}
                                                 {...register("addressLine2Bill")} />
                                         </div>
 
                                         <div className="col-md-5">
                                             <label htmlFor="country" className="form-label">Country</label>
                                             <select className="form-select" id="countryBill" 
+                                                    disabled={isSameAsShippingAddress}
                                                     {...register("countryBill", { required: {value : true, message : "country is requred"} } )} >
                                                 <option value="">Choose...</option>
-                                                <option>United States</option>
+                                                {countriesArray && countriesArray.map((country) => 
+                                                    <option key={country.name.common}>{country.name.common}</option>)}
                                             </select>
                                             <p>{errors.countryBill?.message}</p>
-                                            {/* <div className="invalid-feedback">
-                                                Please select a valid country.
-                                            </div> */}
                                         </div>
 
                                         <div className="col-md-4">
                                             <label htmlFor="state" className="form-label">District</label>
-                                            <select className="form-select" id="districtBill" required
-                                                    {...register("districtBill", { required: {value : true, message : "district is requred"}  })} >
+                                            <select className="form-select" id="districtBill"
+                                                    disabled={isSameAsShippingAddress}
+                                                    {...register("districtBill", { required: {value : true, message : "district is requred"}  })} >                                          
                                                 <option value="">Choose...</option>
-                                                <option>California</option>
+                                                <option>Colombo</option>
+                                                <option>Gampaha</option>
+                                                <option>Kalutara</option>
+                                                <option>Kandy</option>
+                                                <option>Matale</option>
+                                                <option>Nuwara Eliya</option>
+                                                <option>Galle</option>
+                                                <option>Matara</option>
+                                                <option>Hambantota</option>
+                                                <option>Jaffna</option>
+                                                <option>Kilinochchi</option>
+                                                <option>Vavuniya</option>
+                                                <option>Mullaitivu</option>
+                                                <option>Batticaloa</option>
+                                                <option>Ampara</option>
+                                                <option>Trincomalee</option>
+                                                <option>Kurunegala</option>
+                                                <option>Puttalam</option>
+                                                <option>Anuradhapura</option>
+                                                <option>Polonnaruwa</option>
+                                                <option>Badulla</option>
+                                                <option>Moneragala</option>
+                                                <option>Ratnapura</option>
+                                                <option>Kegalle</option>
                                             </select>
                                             <p>{errors.districtBill?.message}</p>
-                                            {/* <div className="invalid-feedback">
-                                                Please provide a valid state.
-                                            </div> */}
                                         </div>
-
-
                                     </div>
+
+
 
                                     <hr className="my-4" />
 
@@ -498,6 +549,12 @@ export default function Cart() {
                                     <hr className="my-4" />
 
                                     {/* END -> Billing Address details */}
+
+
+
+
+
+
 
                                     {/* START -> Payments */}
 
@@ -562,7 +619,9 @@ export default function Cart() {
                                     
                                     {/* <ButtonCartPayNow/> */}
                                     <ButtonCartPayNow locationToRoute="/login" classname="btnCartPayNow" >Pay Now</ButtonCartPayNow>
-
+                                    
+                                    <button onClick={handleSubmit(submitForm)} className="btn btn-primary w-30 py-2 m-1 mb-3" type="submit"  > Pay Now </button>
+                                    
                                     {/* <button className=" btn btn-primary btn-lg mb-5 mt-4" type="submit">Pay Now</button> */}
 
                                 </div>
