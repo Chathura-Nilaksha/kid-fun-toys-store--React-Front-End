@@ -26,7 +26,7 @@ export default function StoreItemNew (item : StoreItemProps) {
 
           {quantity === 0 ? (
 
-            <Button className="w-100" onClick={() => increaseCartQuantity(item.id)}>
+            <Button className="w-100" onClick={() => increaseCartQuantity(item.id, item.name, item.price)}>
               + Add To Cart
             </Button>
 
@@ -36,7 +36,7 @@ export default function StoreItemNew (item : StoreItemProps) {
               <div className="d-flex align-items-center justify-content-center" style={{ gap: ".5rem" }}>
                 <Button onClick={() => decreaseCartQuantity(item.id)}>-</Button>
                 <div> <span className="fs-3">{quantity}</span> in cart  </div>
-                <Button onClick={() => increaseCartQuantity(item.id)}>+</Button>
+                <Button onClick={() => increaseCartQuantity(item.id, item.name, item.price)}>+</Button>
               </div>
               <Button 
                 onClick={() => removeFromCart(item.id)}

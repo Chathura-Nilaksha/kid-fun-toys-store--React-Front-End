@@ -1,12 +1,29 @@
-import ButtonCartPayNow from "../components/ButtonCartPayNow";
+// import ButtonCartPayNow from "../components/ButtonCartPayNow";
+// import axios from "axios";
+// import { post } from "jquery";
 import "../components/ButtonCartPayNow.css";
-import { useShoppingCart } from "../context/ShoppingCartContext";
 import "./Cart.css"
+import { useShoppingCart } from "../context/ShoppingCartContext";
 import storeItems from "../data/landingPageItems.json";
 import { Button } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { useEffect, useState } from "react";
+
+// isSaveBillingDataInDB , isSaveShippingDataInDB
+// USEFORM official doc has as type as below.
+// type FormValues = {
+//   firstName: string
+//   lastName: string
+//   email: string
+// }
+    // USEFORM official doc has as type as below.
+    // <form onSubmit={handleSubmit(onSubmit)}>
+    //   <input {...register("firstName")} />
+    //   <input {...register("lastName")} />
+    //   <input type="email" {...register("email")} />
+
+    //   <input type="submit" value="Send"/>    
+    // </form>
 
 interface FormInputCart {  
     firstName: string,   // need to change these variables--ship    
@@ -26,25 +43,51 @@ interface FormInputCart {
     countryBill: string,
     districtBill: string
 
-    debit: string,
-    credit: string,
+    // isSaveBillingDataInDB: boolean,
+    // isSaveShippingDataInDB: boolean,
+
+    // debit: string,
+    // credit: string,
     ccName:  string,
     ccNumber: number,
     ccExpiration: number,
-    cccvv: number
-
-    orderItemDetailArray : orderItemDetails []
-}
-interface orderItemDetails {
-    itemCode: number,
-    description: string,
-    unitPrice: number,
-    quantity: number,
-    subTotal: number
+    cccvv: number,
 }
 
 export default function Cart() {
     const { cartQuantity, cartItems, removeFromCart } = useShoppingCart();
+    const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormInputCart>()
+
+    const submitForm = async (customerAndOrderData: FormInputCart) => {
+        
+        let customerAndOrderDataWithDBSaves =  { customerAndOrderData,
+                                                 isSaveShippingDataInDB, 
+                                                 isSaveBillingDataInDB, 
+                                                 cardType,
+                                                 cartItems,
+                                                 grandTotal }
+                                               
+        alert(JSON.stringify(customerAndOrderDataWithDBSaves))
+        alert(" The form has been submitted successfully ")
+        console.log(customerAndOrderDataWithDBSaves);
+        console.log("sending or not to BE-ship data- " + isSaveShippingDataInDB);
+        console.log("sending or not to BE-bill data- " + isSaveBillingDataInDB);
+        const response = await fetch("http://localhost:8081/customer/save-details", 
+            {   method : "POST",
+                body: JSON.stringify(customerAndOrderDataWithDBSaves),
+                headers: { "Content-Type": "application/json" }          }        
+        )
+        console.log(response.status);
+        
+
+        // axios.post('http://localhost:8081/customer/save-details', customerData) // change the http address correctly
+        //     .then((response) => {
+        //         console.log(response);
+        //         console.log("response came");
+        //         $("thank-you-message").prop("hidden", false);
+        //         //Above (May be a JQUERY)for-show the "thank-you-message" tag when reponse ok
+        //     });
+    }
 
     // function calculatingSubTotal() {
     //     let rs: any = document.getElementById("unitPriceOfItem")?.nodeValue;
@@ -58,20 +101,6 @@ export default function Cart() {
                                                     ,0) ;
     // eachCartItem.quantity * (storeItems.find(i => i.id === eachCartItem.id )?.price || 0). // const cartQuantity = 1;
     
-    const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormInputCart>()
-
-    const submitForm = (customerData: any) => {
-        alert(JSON.stringify(customerData))
-        console.log(customerData);
-        axios.post('http://localhost:8081/customer/save-details', customerData) // change the http address correctly
-            .then((response) => {
-                console.log(response);
-                console.log("response came");
-                $("thank-you-message").prop("hidden", false);
-                //Above (May be a JQUERY)for-show the "thank-you-message" tag when reponse ok
-            });
-    }
-
     // const saveShippingAddressDataTesting = (event : any) => {
     //     const FormDataTesting = new FormData(event.currentTarget);
     //     const firstNameShiptesting = FormDataTesting.get("firstName");
@@ -82,16 +111,49 @@ export default function Cart() {
     // }    
     // const[saveShippingAddress, setSaveShippingAddress] = useState(false);
 
-
-    
+// RELATED to- Save Shipping Data InDB  
+    const [isSaveShippingDataInDB, setIsSaveShippingDataInDB] = useState(false); 
+    // isSaveShippingDataInDB --> need to send this value to DB too to save shipping data as an object
     const handleSaveShipping = (e : any) => { //this is to --> save Ship addr.details
-        console.log(e.target.checked);
-        if(e.target.checked){
-            console.log("save data");// here put a function when tick to add shipaddress data to save in BE
-        }
-        // setSaveShippingAddress(e.target.checked);
-    }
+        console.log(e.target.checked, isSaveShippingDataInDB);
+        console.log("status of isSaveShippingDataInDB" + isSaveShippingDataInDB);
+        setIsSaveShippingDataInDB(e.target.checked);
 
+        // if(e.target.checked){ // here put a function when tick to add shipaddress data to save in BE
+        //     console.log("save Shipping data in the database");
+        //     setIsSaveShippingDataInDB(true);
+        //     console.log(isSaveShippingDataInDB);
+        // }else{
+        //     setIsSaveShippingDataInDB(false);
+        //     console.log(isSaveShippingDataInDB);
+        // }// setSaveShippingAddress(e.target.checked);
+    }  
+    useEffect(() => {
+        if (isSaveShippingDataInDB) {
+        console.log("Save shipping data in the database");
+        console.log(isSaveShippingDataInDB);
+        // Call your function to save shipping data to backend here
+        }
+        console.log(isSaveShippingDataInDB);
+    }, [isSaveShippingDataInDB]);
+
+//RELATED to- Save Billing Data InDB
+    const [isSaveBillingDataInDB, setIsSaveBillingDataInDB] = useState(false); 
+        // isSaveBillingDataInDB --> need to send this value to DB too to save billing data as an object
+
+    const handleSaveBilling = (e : any) => { //this is to --> save Billing addr.details
+        console.log(e.target.checked, isSaveBillingDataInDB);
+        console.log("status of isSaveBillingDataInDB" + isSaveBillingDataInDB);
+        setIsSaveBillingDataInDB(e.target.checked);
+    }
+    useEffect(() => {
+        if (isSaveBillingDataInDB) {
+        console.log("Save billing data in the database");
+        console.log(isSaveBillingDataInDB);
+        // Call your function to save billing data to BE here
+        }
+        console.log(isSaveBillingDataInDB);
+    }, [isSaveBillingDataInDB]);
 
 
     // const [assignShippingAddressData, setAssignShippingAddressData ] = 
@@ -154,13 +216,6 @@ export default function Cart() {
         }
     }
 
-    const handleSaveBilling = (e : any) => { //this is to --> save Billing addr.details
-        console.log(e.target.checked);
-        if(e.target.checked){
-            console.log("save Billing addr data");// here put a function when tick, to add billing address data to save in BE
-        } 
-    }
-
     const [ countriesArray, setCountriesArray ] = useState([]);
 
     useEffect (() => {fetch("https://restcountries.com/v3.1/all")
@@ -171,13 +226,14 @@ export default function Cart() {
                     }
         )}, []
     );                                               
-    
 
-
+// Payment-cardType --USESTATE()
+    const[cardType, setCardType] = useState<string>();
 
 
     return (
-        <form className="container" method="post" onSubmit={handleSubmit(submitForm)} >
+        <form className="container" method="post" onSubmit={handleSubmit(submitForm)} > 
+                                                {/* onSubmit={handleSubmit(onSubmit) */}
             <div className="bg-body-tertiary">
                 <div className="container">
                     <main>
@@ -428,11 +484,6 @@ export default function Cart() {
 
 
 
-
-
-
-
-
                                     {/* START -> BILL Address details */}
                                                     {/* BOX  TICK--START-- for equal address data */}
 
@@ -443,9 +494,6 @@ export default function Cart() {
                                         <label className="form-check-label" htmlFor="same-address">Tick this Box if Billing address is the same as your Shipping address</label>
                                     </div>
                                                     {/* BOX  TICK--END-- for equal address data */}
-
-
-
 
                                     <div className="row g-3">
                                         <div className="col-sm-6">
@@ -534,9 +582,6 @@ export default function Cart() {
                                             <p>{errors.districtBill?.message}</p>
                                         </div>
                                     </div>
-
-
-
                                     <hr className="my-4" />
 
                                     <div className="form-check">
@@ -551,30 +596,28 @@ export default function Cart() {
                                     {/* END -> Billing Address details */}
 
 
-
-
-
-
-
                                     {/* START -> Payments */}
 
                                     <h4 className="mb-3"><strong> Payment </strong></h4>
 
-                                    <div className="my-3">
+                                    <div className="my-3" >
                                         <div className="form-check">
-                                            <input id="credit" type="radio" className="form-check-input" checked required 
-                                                {...register("credit", { required: true })} />
+                                            <input id="credit" type="radio" className="form-check-input"  
+                                                // {...register("credit", { required: true })} 
+                                                name="cardType" value="Credit card" 
+                                                onChange={(e) => setCardType(e.target.value)}
+                                                required
+                                                />
                                             <label className="form-check-label" htmlFor="credit">Credit card</label>
                                         </div>
                                         <div className="form-check">
-                                            <input id="debit" type="radio" className="form-check-input" required 
-                                                {...register("debit", { required: true })} />
+                                            <input id="debit" type="radio" className="form-check-input"  
+                                                // {...register("debit", { required: true })} 
+                                                name="cardType" value="Debit card"
+                                                onChange={(e) => setCardType(e.target.value)}
+                                                />
                                             <label className="form-check-label" htmlFor="debit">Debit card</label>
                                         </div>
-                                        {/* <div className="form-check">
-                                            <input id="paypal" name="paymentMethod" type="radio" className="form-check-input" required />
-                                            <label className="form-check-label" htmlFor="paypal">PayPal</label>
-                                        </div> */}
                                     </div>
 
                                     <div className="row gy-3">
@@ -599,7 +642,7 @@ export default function Cart() {
 
                                         <div className="col-md-3">
                                             <label htmlFor="cc-expiration" className="form-label">Year of Expiration</label>
-                                            <input type="text" className="form-control" id="ccExpiration" placeholder="" required 
+                                            <input type="text" className="form-control" id="ccExpiration" placeholder="Example: 2024" required 
                                                 {...register("ccExpiration", { required: true })} />
                                             <div className="invalid-feedback">
                                                 Expiration date required
@@ -618,9 +661,12 @@ export default function Cart() {
                                     {/* END -> Payments */}
                                     
                                     {/* <ButtonCartPayNow/> */}
-                                    <ButtonCartPayNow locationToRoute="/login" classname="btnCartPayNow" >Pay Now</ButtonCartPayNow>
                                     
-                                    <button onClick={handleSubmit(submitForm)} className="btn btn-primary w-30 py-2 m-1 mb-3" type="submit"  > Pay Now </button>
+                                    {/* <ButtonCartPayNow locationToRoute="/login" classname="btnCartPayNow" >Pay Now</ButtonCartPayNow> */}
+                                        {/* below we can use input tag with below same attributes too */}
+                                    <button type="submit" value="Submit above Data">Submit form</button>
+                                                    {/* below with "onClick" attribute -- not working the submitform if it is in the button tag */}
+                                    {/* <button onClick={handleSubmit(submitForm)} className="btn btn-primary w-30 py-2 m-1 mb-3" type="submit"  > Pay Now </button> */}
                                     
                                     {/* <button className=" btn btn-primary btn-lg mb-5 mt-4" type="submit">Pay Now</button> */}
 
@@ -635,3 +681,5 @@ export default function Cart() {
         </form>
     );
 }
+
+/////////////////////////////////////////////

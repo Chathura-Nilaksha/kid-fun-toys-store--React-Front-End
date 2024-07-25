@@ -1,10 +1,11 @@
 import { ReactNode, createContext, useContext } from "react";
 import useLocalStorage from "../hooks/useLocalStorage";
+
 interface ShoppingCartContext {
     // openCart: () => void,
     // closeCart: () => void,
     getItemQuantity(id: number) : number,    // getItemQuantity:(id: number) => number,
-    increaseCartQuantity: (id: number) => void,
+    increaseCartQuantity: (id: number, name: string, price: number) => void,
     decreaseCartQuantity: (id: number) => void,
     removeFromCart: (id: number) => void,
     cartQuantity: number,
@@ -15,7 +16,9 @@ interface ShoppingCartProviderProps {
 }
 type CartItem = {
     id: number,
-    quantity: number
+    quantity: number, // purchsed qty
+    name: string,     // item description
+    price: number     // unit price
 }
 const ShoppingCartContext  = createContext( {} as ShoppingCartContext)
 
@@ -28,15 +31,16 @@ export function ShoppingCartProvider({children}:ShoppingCartProviderProps){
     // const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [cartItems, setCartItems] = useLocalStorage<CartItem[]>("shopping-cart", []); 
 
+
     const cartQuantity = cartItems.reduce((quantity, item) => (item.quantity+ quantity), 0);
     
     function getItemQuantity(id: number){
         return  cartItems.find(item => item.id === id)?.quantity || 0
     }
-    function increaseCartQuantity(id: number) {
-        setCartItems(currItems => {
+    function increaseCartQuantity(id: number, name: string, price: number) {
+        setCartItems((currItems) => {
             if(currItems.find(item => item.id === id) == null){  //item.id===id--->check.here id=items inside existing cart.
-                return [...currItems, {id, quantity:1}];
+                return [...currItems, {id, name, quantity:1, price}];
             }else{
                 return currItems.map(item => {
                     if(item.id === id){ return {...item, quantity : item.quantity + 1};}
